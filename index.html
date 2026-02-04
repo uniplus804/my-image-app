@@ -1,32 +1,43 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Free Google Images App</title>
+  <meta charset="UTF-8">
+  <title>Google Image Search (Async-G-I-S)</title>
   <style>
-    img { width: 150px; height: auto; margin: 10px; border-radius: 8px; }
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    img { width: 150px; height: auto; margin: 8px; border-radius: 6px; }
+    #results { margin-top: 20px; display: flex; flex-wrap: wrap; }
+    input, button { padding: 8px; font-size: 16px; }
+    button { cursor: pointer; }
   </style>
 </head>
 <body>
-  <h1>Search Images</h1>
+  <h1>Search Google Images</h1>
   <input type="text" id="query" placeholder="Enter search term">
   <button onclick="searchImages()">Search</button>
+
   <div id="results"></div>
 
   <script>
     async function searchImages() {
-      const q = document.getElementById('query').value;
+      const q = document.getElementById("query").value.trim();
+
+      if (!q) return;
+
       const res = await fetch(`/api/images?q=${encodeURIComponent(q)}&limit=10`);
       const data = await res.json();
-      const container = document.getElementById('results');
-      container.innerHTML = '';
-      if(data.success) {
+
+      const container = document.getElementById("results");
+      container.innerHTML = "";
+
+      if (data.success) {
         data.images.forEach(url => {
-          const img = document.createElement('img');
+          const img = document.createElement("img");
           img.src = url;
           container.appendChild(img);
         });
       } else {
-        container.innerHTML = `<p>Error: ${data.error}</p>`;
+        container.innerText = "Error: " + data.error;
       }
     }
   </script>
