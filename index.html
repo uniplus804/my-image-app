@@ -1,45 +1,114 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Google Image Search (Async-G-I-S)</title>
-  <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    img { width: 150px; height: auto; margin: 8px; border-radius: 6px; }
-    #results { margin-top: 20px; display: flex; flex-wrap: wrap; }
-    input, button { padding: 8px; font-size: 16px; }
-    button { cursor: pointer; }
-  </style>
+<meta charset="UTF-8">
+<title>Google Image Search</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    background: #f8f8f8;
+  }
+
+  input, button {
+    padding: 8px;
+    font-size: 16px;
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  #results {
+    margin-top: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  #results img {
+    width: 200px;
+    height: auto;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+
+  #results img:hover {
+    transform: scale(1.05);
+  }
+
+  /* Fullscreen overlay */
+  #imgOverlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.9);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+  }
+
+  #imgOverlay img {
+    max-width: 90%;
+    max-height: 90%;
+    border-radius: 8px;
+  }
+</style>
 </head>
 <body>
-  <h1>Search Google Images</h1>
-  <input type="text" id="query" placeholder="Enter search term">
-  <button onclick="searchImages()">Search</button>
 
-  <div id="results"></div>
+<h1>Google Image Search</h1>
+<input type="text" id="query" placeholder="Enter search term">
+<input type="number" id="limit" placeholder="Number of images" value="20" min="1">
+<button onclick="searchImages()">Search</button>
 
-  <script>
-    async function searchImages() {
-      const q = document.getElementById("query").value.trim();
+<div id="results"></div>
 
-      if (!q) return;
+<!-- Overlay for full screen -->
+<div id="imgOverlay"><img src="" alt=""></div>
 
-      const res = await fetch(`/api/images?q=${encodeURIComponent(q)}&limit=10`);
-      const data = await res.json();
+<script>
+async function searchImages() {
+  const query = document.getElementById("query").value.trim();
+  const limit = document.getElementById("limit").value || 20;
+  if (!query) return;
 
-      const container = document.getElementById("results");
-      container.innerHTML = "";
+  const res = await fetch(`/api/images?q=${encodeURIComponent(query)}&limit=${limit}`);
+  const data = await res.json();
 
-      if (data.success) {
-        data.images.forEach(url => {
-          const img = document.createElement("img");
-          img.src = url;
-          container.appendChild(img);
-        });
-      } else {
-        container.innerText = "Error: " + data.error;
-      }
-    }
-  </script>
+  const container = document.getElementById("results");
+  container.innerHTML = "";
+
+  if(data.success) {
+    // Remove duplicates
+    const uniqueImages = [...new Map(data.images.map(img => [img.url, img])).values()];
+
+    uniqueImages.forEach(imgObj => {
+      const img = document.createElement("img");
+      img.src = imgObj.url;
+      img.alt = "Image";
+
+      // Click to view full screen
+      img.addEventListener("click", () => {
+        const overlay = document.getElementById("imgOverlay");
+        overlay.querySelector("img").src = imgObj.url;
+        overlay.style.display = "flex";
+      });
+
+      container.appendChild(img);
+    });
+  } else {
+    container.innerText = "Error: " + data.error;
+  }
+}
+
+// Click overlay to close
+document.getElementById("imgOverlay").addEventListener("click", () => {
+  document.getElementById("imgOverlay").style.display = "none";
+});
+</script>
+
 </body>
 </html>
