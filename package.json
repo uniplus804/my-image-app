@@ -1,0 +1,12 @@
+{
+  "name": "free-google-images-app",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "vercel dev"
+  },
+  "dependencies": {
+    "free-google-images": "^1.0.3"
+  }
+}
